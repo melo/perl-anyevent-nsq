@@ -1,0 +1,4 @@
+/AnyEvent-NSQ-*
+.build
+.prove
+perltidy.LOG
