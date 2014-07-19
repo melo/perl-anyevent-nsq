@@ -1,6 +1,6 @@
-package { {$name} };
+package AnyEvent::NSQ;
 
-# ABSTRACT: a very cool module
+# ABSTRACT: NSQ.io asynchronous client
 # VERSION
 # AUTHORITY
 
