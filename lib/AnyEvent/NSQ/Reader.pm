@@ -96,9 +96,9 @@ sub _start_nsqd_connection {
 
             my $action = $self->{message_cb}->($self, $msg);
 
+            ## Action below -1 does nothing, we assume the user took care of it himself
             if (not defined $action) { $conn->mark_as_done_msg($_[1]) }
-            elsif ($action >= 0) { $conn->requeue_msg($_[1], $action) }
-            else                 { $conn->touch_msg($_[1], -$action) }
+            elsif ($action >= -1) { $conn->requeue_msg($_[1], $action) }
           }
         );
 
