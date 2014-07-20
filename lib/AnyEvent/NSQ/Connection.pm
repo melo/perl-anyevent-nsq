@@ -211,7 +211,7 @@ sub _disconnected {
   my ($self) = @_;
 
   $self->{handle}->destroy;
-  delete $self->{$_} for qw(conn connected);
+  delete $self->{$_} for qw(handle connected);
 }
 
 sub _force_disconnect {
