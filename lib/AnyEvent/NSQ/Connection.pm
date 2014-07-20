@@ -289,16 +289,17 @@ sub _process_success_frame {
     $self->nop;
   }
   else {
-    if ($msg ne 'OK') {
-      my $info = eval { JSON::XS::decode_json($msg) };
+    my $info = { msg => $msg };
+    if ($msg =~ m/^\s*[{]/) {
+      $info = eval { JSON::XS::decode_json($msg) };
       unless ($info) {
         $self->_log_error(qq{unexpected/invalid JSON response '$msg'});
         return;
       }
-
-      my $cb = shift @{ $self->{success_cb_queue} || [] };
-      $cb->($self, $info) if $cb;
     }
+
+    my $cb = shift @{ $self->{success_cb_queue} || [] };
+    $cb->($self, $info) if $cb;
   }
 
   return 'keep_reading_frames';
