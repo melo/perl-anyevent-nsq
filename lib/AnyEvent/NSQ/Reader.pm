@@ -22,7 +22,7 @@ sub new {
   $self->{disconnect_cb} = delete($args{disconnect_cb}) || sub { };
   $self->{error_cb}      = delete($args{error_cb})      || sub { croak($_[1]) };
 
-  for my $arg (qw( ready_count client_id hostname requeue_delay )) {
+  for my $arg (qw( ready_count client_id hostname requeue_delay connect_timeout )) {
     $self->{$arg} = delete($args{$arg}) if exists $args{$arg};
   }
 
@@ -79,7 +79,7 @@ sub _start_nsqd_connection {
   croak(qq{FATAL: could not parse '$nsqd_tcp_address' as a valid address/port combination}) unless $host and $port;
 
   my %conn = (host => $host, port => $port);
-  for my $arg (qw( client_id hostname error_cb requeue_delay )) {
+  for my $arg (qw( client_id hostname error_cb requeue_delay connect_timeout )) {
     $conn{$arg} = $self->{$arg} if exists $self->{$arg};
   }
 
