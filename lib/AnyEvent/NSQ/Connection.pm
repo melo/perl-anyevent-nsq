@@ -144,6 +144,15 @@ sub requeue_msg {
   return;
 }
 
+sub touch_msg {
+  my ($self, $msg) = @_;
+  return unless my $hdl = $self->{handle};
+
+  $hdl->push_write("TOUCH $msg->{message_id}\012");
+
+  return;
+}
+
 sub nop {
   my ($self, $n) = @_;
   return unless my $hdl = $self->{handle};
