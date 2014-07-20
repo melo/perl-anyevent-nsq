@@ -41,7 +41,7 @@ sub new {
   $self->{host} = delete $args{host} or croak q{FATAL: required 'host' parameter is missing};
   $self->{port} = delete $args{port} or croak q{FATAL: required 'port' parameter is missing};
 
-  for my $p (qw( client_id hostname connect_cb )) {
+  for my $p (qw( client_id hostname connect_cb error_cb )) {
     $self->{$p} = delete $args{$p} if exists $args{$p} and defined $args{$p};
   }
 
