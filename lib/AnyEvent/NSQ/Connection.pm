@@ -59,8 +59,6 @@ sub connect {
   my ($self) = @_;
   return if $self->{handle};
 
-  my $err_cb = $self->{error_cb};
-
   $self->{handle} = AnyEvent::Handle->new(
     connect => [$self->{host}, $self->{port}],
 
@@ -69,11 +67,11 @@ sub connect {
 
     on_connect_error => sub {
       $self->_disconnected;
-      $err_cb->($self, '(connect) ' . ($_[1] || $!));
+      $self->_log_error('(connect failed) ' . ($_[1] || $!));
     },
     on_error => sub {
       $self->_disconnected;
-      $err_cb->($self, '(read) ' . ($_[2] || $!));
+      $self->_log_error('(read error) ' . ($_[2] || $!));
     },
     on_eof => sub {
       $self->_disconnected;
@@ -310,5 +308,14 @@ sub _on_success_frame {
   push @{ $self->{success_cb_queue} }, $cb;
 }
 
+
+## Error logging
+sub _log_error {
+  my ($self, $err) = @_;
+
+  $self->{error_cb}->($err, qq{FATAL: dropping connection to host '$self->{host}' port $self->{port}, reason: $err});
+
+  return;
+}
 
 1;
