@@ -136,7 +136,10 @@ sub requeue_msg {
   my ($self, $msg, $delay) = @_;
   return unless my $hdl = $self->{handle};
 
-  $hdl->push_write("FIN $msg->{message_id}\012");
+  $delay = 0 unless defined $delay;
+  $delay = $msg->{attempts} * $self->{requeue_delay} if $delay < 0;
+
+  $hdl->push_write("REQ $msg->{message_id} $delay\012");
 
   return;
 }
