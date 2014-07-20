@@ -35,6 +35,7 @@ sub new {
       connect_timeout => undef,                 ## use kernel default
       requeue_delay   => 90,
       error_cb        => sub { carp($_[2]) },
+      disconnect_cb   => sub { },
     },
     $class
   );
@@ -42,7 +43,7 @@ sub new {
   $self->{host} = delete $args{host} or croak q{FATAL: required 'host' parameter is missing};
   $self->{port} = delete $args{port} or croak q{FATAL: required 'port' parameter is missing};
 
-  for my $p (qw( client_id hostname connect_timeout connect_cb error_cb )) {
+  for my $p (qw( client_id hostname connect_timeout connect_cb disconnect_cb error_cb )) {
     next unless exists $args{$p} and defined $args{$p};
     $self->{$p} = delete $args{$p};
     croak(qq{FATAL: parameter '$p' must be a CodeRef}) if $p =~ m{_cb$} and ref($self->{$p}) ne 'CODE';
@@ -215,6 +216,7 @@ sub _disconnected {
 
   $self->{handle}->destroy;
   delete $self->{$_} for qw(handle connected);
+  $_[0]->{disconnect_cb}->(@_) if $_[0]->{disconnect_cb};
 }
 
 ## Try to be as clean as possible but force a disconnect
