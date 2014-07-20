@@ -224,7 +224,6 @@ sub _force_disconnect {
   $hdl->on_error(
     sub {
       delete $hdl->{rbuf};
-      $hdl->destroy;
       $self->_disconnected;
     }
   );
