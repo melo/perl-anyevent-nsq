@@ -42,13 +42,13 @@ sub new {
   $self->{host} = delete $args{host} or croak q{FATAL: required 'host' parameter is missing};
   $self->{port} = delete $args{port} or croak q{FATAL: required 'port' parameter is missing};
 
-  for my $p (qw( client_id hostname connect_cb error_cb connect_timeout )) {
-    $self->{$p} = delete $args{$p} if exists $args{$p} and defined $args{$p};
+  for my $p (qw( client_id hostname connect_timeout connect_cb error_cb )) {
+    next unless exists $args{$p} and defined $args{$p};
+    $self->{$p} = delete $args{$p};
+    croak(qq{FATAL: parameter '$p' must be a CodeRef}) if $p =~ m{_cb$} and ref($self->{$p}) ne 'CODE';
   }
 
   croak(q{FATAL: required 'connect_cb' parameter is missing}) unless $self->{connect_cb};
-  croak(q{FATAL: parameter 'connect_cb' must be a CodeRef})   unless ref($self->{connect_cb}) eq 'CODE';
-  croak(q{FATAL: parameter 'error_cb' must be a CodeRef})     unless ref($self->{error_cb}) eq 'CODE';
 
   $self->connect;
 
