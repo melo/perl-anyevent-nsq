@@ -55,6 +55,9 @@ sub new {
   return $self;
 }
 
+
+## Connection control
+
 sub connect {
   my ($self) = @_;
   return if $self->{handle};
@@ -82,7 +85,7 @@ sub connect {
 }
 
 
-## Protocol
+## Protocol API
 
 sub identify {
   my ($self, @rest) = @_;
@@ -194,6 +197,7 @@ sub _build_identity_payload {
 
 ## Connection setup and cleanup
 
+## After a sucessfull connection, do all tasks expected of the protocol and our users
 sub _connected {
   my ($self) = @_;
 
@@ -205,6 +209,7 @@ sub _connected {
   $self->{connect_cb}->($self);
 }
 
+## Cleanup $self after a disconnect
 sub _disconnected {
   my ($self) = @_;
 
@@ -212,6 +217,7 @@ sub _disconnected {
   delete $self->{$_} for qw(handle connected);
 }
 
+## Try to be as clean as possible but force a disconnect
 sub _force_disconnect {
   my ($self) = @_;
   return unless my $hdl = $self->{handle};
@@ -228,7 +234,7 @@ sub _force_disconnect {
 }
 
 
-## low-level protocol details
+## low-level protocol management
 
 sub _send_magic_identifier { $_[0]{handle}->push_write('  V2') }
 
