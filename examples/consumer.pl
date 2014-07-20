@@ -10,6 +10,8 @@ use AnyEvent::NSQ::Reader;
 my ($topic, $channel) = @ARGV;
 die "Usage: consumer.pl topic channel\n" unless $topic and $channel;
 
+my $cv = AE::cv;
+
 my $c = 1;
 my $r = AnyEvent::NSQ::Reader->new(
   topic              => $topic,
@@ -19,6 +21,8 @@ my $r = AnyEvent::NSQ::Reader->new(
 
 #  message_cb => sub {print STDERR "$c: $_[1]{message}\n";$c++; return},    ## return undef => mark_as_done_msg()
   message_cb => sub {return},    ## return undef => mark_as_done_msg()
+
+  error_cb => sub { warn "FATAL: got error message '$_[1]', exiting...\n"; $cv->send },
 );
 
-AE::cv->recv;
+$cv->recv;
