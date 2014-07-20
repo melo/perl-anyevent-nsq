@@ -19,8 +19,8 @@ my $r = AnyEvent::NSQ::Reader->new(
   nsqd_tcp_addresses => '127.0.0.1',
   client_id          => "${channel}_consumer/pid_$$",
 
-#  message_cb => sub {print STDERR "$c: $_[1]{message}\n";$c++; return},    ## return undef => mark_as_done_msg()
-  message_cb => sub {return},    ## return undef => mark_as_done_msg()
+#  message_cb => sub { print STDERR "$c: $_[1]{message}\n"; $c++; return },    ## return undef => mark_as_done_msg()
+  message_cb => sub {return},                                                 ## return undef => mark_as_done_msg()
 
   error_cb      => sub { warn "$_[1]\n" },
   disconnect_cb => sub { warn "Got disconnected... exiting...\n"; $cv->send },
