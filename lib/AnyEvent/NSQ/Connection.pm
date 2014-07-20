@@ -32,11 +32,9 @@ sub new {
 
   my $self = bless(
     { hostname        => hostname(),
-      error_cb        => sub {
-        croak(qq{FATAL: error from host '$_[0]->{host}' port $_[0]->{port}: $_[1]});
-      },
       connect_timeout => undef,                 ## use kernel default
       requeue_delay   => 90,
+      error_cb        => sub { carp($_[2]) },
     },
     $class
   );
