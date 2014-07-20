@@ -129,6 +129,20 @@ sub subscribe {
   return;
 }
 
+sub publish {
+  my ($self, $topic, $data, $cb) = @_;
+  return unless my $hdl = $self->{handle};
+
+  $cb = sub { }
+    unless $cb;
+
+  $hdl->push_write("PUB $topic\012" . pack('N', length($data)) . $data);
+
+  $self->_on_next_success_frame($cb);
+
+  return;
+}
+
 sub ready {
   my ($self, $n) = @_;
   return unless my $hdl = $self->{handle};
