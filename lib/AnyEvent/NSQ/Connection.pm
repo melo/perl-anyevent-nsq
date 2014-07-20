@@ -70,12 +70,12 @@ sub connect {
     on_connect => sub { $self->_connected(@_) },
 
     on_connect_error => sub {
-      $self->_disconnected;
       $self->_log_error('(connect failed) ' . ($_[1] || $!));
+      $self->_disconnected;
     },
     on_error => sub {
-      $self->_disconnected;
       $self->_log_error('(read error) ' . ($_[2] || $!));
+      $self->_disconnected;
     },
     on_eof => sub {
       $self->_disconnected;
