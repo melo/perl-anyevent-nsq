@@ -22,6 +22,12 @@ sub new {
   return $self;
 }
 
+sub disconnect {
+  my ($self, $cb) = @_;
+
+  $_->{conn}->disconnect($cb) for values %{ $self->{nsqd_conns} };
+}
+
 
 #### Argument parsing
 
