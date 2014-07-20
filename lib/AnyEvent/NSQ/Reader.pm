@@ -22,7 +22,9 @@ sub new {
   $self->{disconnect_cb} = delete($args{disconnect_cb}) || sub { };
   $self->{error_cb}      = delete($args{error_cb})      || sub { croak($_[1]) };
 
-  $self->{ready_count} = delete($args{ready_count}) if exists $args{ready_count};
+  for my $arg (qw( ready_count client_id hostname )) {
+    $self->{$arg} = delete($args{$arg}) if exists $args{$arg};
+  }
 
   if (my $lookupd_http_addresses = delete $args{lookupd_http_addresses}) {
     $lookupd_http_addresses = [$lookupd_http_addresses] unless ref($lookupd_http_addresses) eq 'ARRAY';
