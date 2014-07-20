@@ -118,7 +118,6 @@ sub ready {
   $self->{ready_count} = $n;
   $self->{in_flight}   = 0;
   $hdl->push_write("RDY $n\012");
-  #  print STDERR ">>>> READY SET $self->{in_flight} / $self->{ready_count}\n";
 
   return;
 }
