@@ -12,7 +12,7 @@ subtest 'basic connection' => sub {
     channel            => 'anyevent-nsq-reader-test',
     nsqd_tcp_addresses => '127.0.0.1',
     client_id          => "10-reader.t/$$",
-    
+
     ready_count => 5,
 
     message_cb => sub {
