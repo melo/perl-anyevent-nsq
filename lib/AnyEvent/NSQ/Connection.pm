@@ -86,13 +86,12 @@ sub connect {
 
 sub identify {
   my ($self, @rest) = @_;
-  my $cb = pop @rest;
   return unless my $hdl = $self->{handle};
 
+  my $cb = pop @rest;
+
   my $data = JSON::XS::encode_json($self->_build_identity_payload(@rest));
-  $hdl->push_write("IDENTIFY\012");
-  $hdl->push_write(pack('N', length($data)));
-  $hdl->push_write($data);
+  $hdl->push_write("IDENTIFY\012" . pack('N', length($data)) . $data);
 
   $self->_on_next_success_frame(sub { $cb->($self, $self->{identify_info} = $_[1]) });
 
