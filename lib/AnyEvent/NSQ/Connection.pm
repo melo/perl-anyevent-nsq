@@ -14,7 +14,6 @@ use Sys::Hostname;
 # Options from the python client, we might want to support later:
 #   timeout=1.0
 #   heartbeat_interval=30
-#   requeue_delay=90
 #   tls_v1=False
 #   tls_options=None
 #   snappy=False
@@ -25,15 +24,19 @@ use Sys::Hostname;
 #   sample_rate=0
 #   auth_secret=None
 
+
+## Constructor
+
 sub new {
   my ($class, %args) = @_;
 
   my $self = bless(
     { hostname        => hostname(),
-      connect_timeout => undef,        ## use kernel default
       error_cb        => sub {
         croak(qq{FATAL: error from host '$_[0]->{host}' port $_[0]->{port}: $_[1]});
       },
+      connect_timeout => undef,                 ## use kernel default
+      requeue_delay   => 90,
     },
     $class
   );
