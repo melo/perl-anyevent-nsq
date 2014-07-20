@@ -116,6 +116,12 @@ sub _start_nsqd_connection {
   return;
 }
 
+## return one connection that is connected
+sub _random_connected_conn {
+  ## FIXME: yeah, Sony-style random going on :)
+  return (values %{ $_[0]{nsqd_conns} })[0]->{conn};
+}
+
 
 #### Hooks for the main states of the connection
 sub _connected {
