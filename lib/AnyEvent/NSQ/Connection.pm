@@ -89,7 +89,7 @@ sub disconnect {
   my ($self, $cb) = @_;
   return unless my $hdl = $self->{handle};
 
-  $hdl->push_write("CLS\012");
+  $hdl->push_write("CLS\012") if $self->{is_subscriber};
 
   $self->_on_next_success_frame(
     sub {
@@ -121,7 +121,8 @@ sub subscribe {
   my ($self, $topic, $chan, $cb) = @_;
   return unless my $hdl = $self->{handle};
 
-  $self->{message_cb} = $cb;
+  $self->{message_cb}    = $cb;
+  $self->{is_subscriber} = 1;
 
   $hdl->push_write("SUB $topic $chan\012");
   $self->_on_next_success_frame(sub { });    ## We don't care about the success ok, and errors will kill us
