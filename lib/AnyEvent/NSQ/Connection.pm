@@ -130,15 +130,23 @@ sub subscribe {
 }
 
 sub publish {
-  my ($self, $topic, $data, $cb) = @_;
+  my ($self, $topic, @data) = @_;
   return unless my $hdl = $self->{handle};
 
-  $cb = sub { }
-    unless $cb;
+  my $cb;
+  $cb = pop @data if ref($data[-1]) eq 'CODE' or !defined($data[-1]);
+  return unless @data;
 
-  $hdl->push_write("PUB $topic\012" . pack('N', length($data)) . $data);
+  my $body = join('', map { pack('N', length($_)) . $_ } @data);
 
-  $self->_on_next_success_frame($cb);
+  if (@data == 1) {
+    $hdl->push_write("PUB $topic\012$body");
+    $self->_on_next_success_frame($cb);
+  }
+  else {
+    $hdl->push_write("MPUB $topic\012" . pack('N', length($body)) . pack('N', scalar(@data)) . $body);
+    $self->_on_next_success_frame($cb);
+  }
 
   return;
 }

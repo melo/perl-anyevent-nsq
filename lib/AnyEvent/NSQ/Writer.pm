@@ -12,19 +12,21 @@ use parent 'AnyEvent::NSQ::Client';
 
 #### Producer API
 
-## Publish a single message - callback is only called if we succedd
+## Publish a single or multiple message - callback is only called if we succedd
 sub publish {
-  my ($self, $topic, $data, $cb) = @_;
+  my ($self, $topic, @data) = @_;
 
   my $conn = $self->_random_connected_conn;
   croak "ERROR: there no active connections at this moment," unless $conn;
 
-  $cb = sub { $cb->($self, $topic, $data, @_) }
-    if $cb;
+  if (ref($data[-1]) eq 'CODE' or !defined($data[-1])) {
+    my $cb = pop @data;
+    push @data, sub { $cb->($self, $topic, \@data, @_) }
+      if $cb;
+  }
 
-  return $conn->publish($topic, $data, $cb);
+  return $conn->publish($topic, @data);
 }
-
 
 
 1;
