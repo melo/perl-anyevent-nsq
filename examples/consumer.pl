@@ -29,9 +29,12 @@ my $r = AnyEvent::NSQ::Reader->new(
 
   message_cb => sub { $t++; $message_cb->(@_, $t) },
 
-  error_cb      => sub { warn "$_[1]\n" if $verbose },
-  disconnect_cb => sub { warn "Got disconnected after $t total messages... exiting...\n" if $verbose; $cv->send },
+  error_cb => sub { warn "$_[1]\n" if $verbose },
+  disconnect_cb => sub { warn "Disconnected after $t total messages... exiting...\n" if $verbose; $cv->send },
 );
+
+my $term_sgn = AE::signal TERM => sub { $r->disconnect };
+my $int_sgn  = AE::signal INT  => sub { $r->disconnect };
 
 $cv->recv;
 
