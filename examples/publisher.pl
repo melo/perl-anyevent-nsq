@@ -12,6 +12,7 @@ my ($topic, $factor) = @ARGV;
 die "Usage: publisher.pl topic [msgs_per_call]\n" unless $topic;
 
 $factor = 1 unless $factor;
+my @factors = (1 .. $factor);
 
 my $cv = AE::cv;
 
@@ -36,7 +37,9 @@ my @readline;
     chomp($line);
     return unless length($line);
 
-    $r->publish($topic, "$c: $line");
+    my @messages = map {"$c.$_: $line"} @factors;
+
+    $r->publish($topic, @messages);
     $c++;
     $_[0]->push_read(@readline);
   }
