@@ -57,7 +57,7 @@ sub _parse_args {
   $self->{disconnect_cb} = delete($args->{disconnect_cb}) || sub { };
   $self->{error_cb}      = delete($args->{error_cb})      || sub { croak($_[1]) };
 
-  $self->{connect_cb}    = delete($args->{connect_cb}) || sub { };
+  $self->{connect_cb}    = delete($args->{connect_cb})  || sub { };
   $self->{identify_cb}   = delete($args->{identify_cb}) || sub { };
 
   for my $arg (qw( client_id hostname connect_timeout )) {
