@@ -35,6 +35,8 @@ sub _parse_args {
 sub _identified {
   my ($self, $conn, $info) = @_;
 
+  $self->SUPER::_identified(@_);
+
   $conn->subscribe(
     $self->{topic},
     $self->{channel},
