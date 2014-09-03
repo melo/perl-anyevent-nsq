@@ -73,27 +73,47 @@ sub _identified {
 }
 
 sub mark_as_done_msg {
-  my $self    = shift;
-  my $message = shift;
+  my ($self, $msg) = @_;
+
+  my $conn = $self->_find_message_connection($msg);
+  return 0 unless $conn;
+
+  $conn->mark_as_done_msg($msg);
+  return 1;
 } 
 
 sub requeue_msg {
-  my $self    = shift;
-  my $message = shift;
+  my ($self, $msg, $delay) = @_;
+
+  my $conn = $self->_find_message_connection($msg);
+  return 0 unless $conn;
+
+  $conn->requeue_msg($msg, $delay);
+  return 1;
 }
 
 sub touch_message {
-  my $self    = shift;
-  my $message = shift;
+  my ($self, $msg) = @_;
+
+  my $conn = $self->_find_message_connection($msg);
+  return 0 unless $conn;
+  
+  $conn->touch_msg($msg);
+  return 1;
 }
 
 sub _find_message_connection {
-  my $self    = shift;
-  my $message = shift; 
+  my ($self, $msg) = @_;
 
-  my $message_id = ref($message) ? $message->{message_id} : $message;
+  my $id = ref($msg) ? $msg->{message_id} : $msg;
 
-  return $self->{routing}->{$message_id};
+  my $conn = $self->{routing}->{$id};
+ 
+  if ( !$conn ) {
+    warn "WARN: Could not find the connection to route msg $id";
+  }
+
+  return $conn;
 }
 
 1;
