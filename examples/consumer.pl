@@ -84,7 +84,6 @@ Usage: consumer.pl [--help|-h] [--print|-p] topic channel
 }
 
 sub message_handler {
-  use Data::Dumper;
   my ($reader, $message) = @_;
 
   if ($print) { 
