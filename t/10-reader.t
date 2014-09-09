@@ -17,6 +17,7 @@ subtest 'basic connection' => sub {
 
     message_cb => sub {
       print STDERR "!!!! GOT MESSAGE '$_[1]{message}\n";
+      $_[0]->mark_as_done_msg($_[1]);
       return;
     },
   );

@@ -63,11 +63,6 @@ sub _identified {
 
       my $action = $self->{message_cb}->($self, $msg);
 
-      ## Action below -1 does nothing, we assume the user took care of it himself
-      if (not defined $action) { $conn->mark_as_done_msg($_[1]) }
-      elsif ($action >= -1) { $conn->requeue_msg($_[1], $action) }
-
-      delete($self->{routing}->{$msg->{message_id}});
     }
   );
 
@@ -77,8 +72,7 @@ sub _identified {
 sub mark_as_done_msg {
   my ($self, $msg) = @_;
 
-  my $conn = $self->_find_message_connection($msg);
-  return 0 unless $conn;
+  my $conn = $self->_find_and_delete_message_connection($msg);
 
   $conn->mark_as_done_msg($msg);
   return 1;
@@ -87,8 +81,7 @@ sub mark_as_done_msg {
 sub requeue_msg {
   my ($self, $msg, $delay) = @_;
 
-  my $conn = $self->_find_message_connection($msg);
-  return 0 unless $conn;
+  my $conn = $self->_find_and_delete_message_connection($msg);
 
   $conn->requeue_msg($msg, $delay);
   return 1;
@@ -97,22 +90,21 @@ sub requeue_msg {
 sub touch_message {
   my ($self, $msg) = @_;
 
-  my $conn = $self->_find_message_connection($msg);
-  return 0 unless $conn;
+  my $conn = $self->_find_and_delete_message_connection($msg);
   
   $conn->touch_msg($msg);
   return 1;
 }
 
-sub _find_message_connection {
+sub _find_and_delete_message_connection {
   my ($self, $msg) = @_;
 
   my $id = ref($msg) ? $msg->{message_id} : $msg;
 
-  my $conn = $self->{routing}->{$id};
+  my $conn = delete($self->{routing}->{$id});
  
   if ( !$conn ) {
-    warn "WARN: Could not find the connection to route msg $id";
+    croak "WARN: Could not find the connection to route msg $id";
   }
 
   return $conn;
