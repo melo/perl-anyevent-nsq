@@ -61,8 +61,7 @@ sub _identified {
       $self->{routing}->{$msg->{message_id}} = $conn;
       weaken( $self->{routing}->{$msg->{message_id}} );
 
-      my $action = $self->{message_cb}->($self, $msg);
-
+      $self->{message_cb}->($self, $msg);
     }
   );
 
