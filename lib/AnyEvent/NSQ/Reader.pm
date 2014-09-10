@@ -7,9 +7,19 @@ package AnyEvent::NSQ::Reader;
 use strict;
 use warnings;
 use Carp 'croak';
+use Scalar::Util qw( weaken );
 
 use parent 'AnyEvent::NSQ::Client';
 
+sub new {
+  my $class = shift;
+  my $self  = $class->SUPER::new(@_);
+
+  # To keep registry of the connection bound to each message
+  $self->{routing} = {};
+
+  return $self;
+}
 
 #### Parameter parsing
 
@@ -46,15 +56,57 @@ sub _identified {
       ## FIXME: bless it with the future AnyEvent::NSQ::Message
       my $msg = $_[1];
 
-      my $action = $self->{message_cb}->($self, $msg);
+      ## Keep the connection in the registry in case the user
+      ##  wants to issue FIN/REQs inside the callback
+      $self->{routing}->{$msg->{message_id}} = $conn;
+      weaken( $self->{routing}->{$msg->{message_id}} );
 
-      ## Action below -1 does nothing, we assume the user took care of it himself
-      if (not defined $action) { $conn->mark_as_done_msg($_[1]) }
-      elsif ($action >= -1) { $conn->requeue_msg($_[1], $action) }
+      $self->{message_cb}->($self, $msg);
     }
   );
 
   $conn->ready($self->{ready_count} || int(($info->{max_rdy_count} || 2000) / 10));
+}
+
+sub mark_as_done_msg {
+  my ($self, $msg) = @_;
+
+  my $conn = $self->_find_and_delete_message_connection($msg);
+
+  $conn->mark_as_done_msg($msg);
+  return 1;
+} 
+
+sub requeue_msg {
+  my ($self, $msg, $delay) = @_;
+
+  my $conn = $self->_find_and_delete_message_connection($msg);
+
+  $conn->requeue_msg($msg, $delay);
+  return 1;
+}
+
+sub touch_message {
+  my ($self, $msg) = @_;
+
+  my $conn = $self->_find_and_delete_message_connection($msg);
+  
+  $conn->touch_msg($msg);
+  return 1;
+}
+
+sub _find_and_delete_message_connection {
+  my ($self, $msg) = @_;
+
+  my $id = ref($msg) ? $msg->{message_id} : $msg;
+
+  my $conn = delete($self->{routing}->{$id});
+ 
+  if ( !$conn ) {
+    croak "WARN: Could not find the connection to route msg $id";
+  }
+
+  return $conn;
 }
 
 1;

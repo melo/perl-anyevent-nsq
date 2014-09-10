@@ -167,7 +167,9 @@ sub mark_as_done_msg {
   my ($self, $msg) = @_;
   return unless my $hdl = $self->{handle};
 
-  $hdl->push_write("FIN $msg->{message_id}\012");
+  my $id = ref($msg) ? $msg->{message_id} : $msg;
+
+  $hdl->push_write("FIN $id\012");
 
   return;
 }
@@ -176,10 +178,13 @@ sub requeue_msg {
   my ($self, $msg, $delay) = @_;
   return unless my $hdl = $self->{handle};
 
-  $delay = 0 unless defined $delay;
-  $delay = $msg->{attempts} * $self->{requeue_delay} if $delay < 0;
+  my $id = ref($msg) ? $msg->{message_id} : $msg;
+  my $attempts = ref($msg) ? $msg->{attempts} : 1;
 
-  $hdl->push_write("REQ $msg->{message_id} $delay\012");
+  $delay = 0 unless defined $delay;
+  $delay = $attempts * $self->{requeue_delay} if $delay < 0;
+
+  $hdl->push_write("REQ $id $delay\012");
 
   return;
 }
@@ -188,7 +193,8 @@ sub touch_msg {
   my ($self, $msg) = @_;
   return unless my $hdl = $self->{handle};
 
-  $hdl->push_write("TOUCH $msg->{message_id}\012");
+  my $id = ref($msg) ? $msg->{message_id} : $msg;
+  $hdl->push_write("TOUCH $id\012");
 
   return;
 }

@@ -18,9 +18,6 @@ usage("topic and channel are required parameters") unless $topic and $channel;
 
 my $cv = AE::cv;
 
-## return undef => mark_as_done_msg()
-my $message_cb = $print ? sub { print "$_[1]{message}\n"; return } : sub {return};
-
 my $t = my $p = 0;
 my $r = AnyEvent::NSQ::Reader->new(
   topic              => $topic,
@@ -28,7 +25,7 @@ my $r = AnyEvent::NSQ::Reader->new(
   nsqd_tcp_addresses => '127.0.0.1',
   client_id          => "${channel}_consumer/pid_$$",
 
-  message_cb => sub { $t++; $p++; $message_cb->(@_) },
+  message_cb => \&message_handler,
 
   error_cb => sub { warn "$_[1]\n" if $verbose },
   disconnect_cb => sub { warn "Disconnected after $t total messages... exiting...\n" if $verbose; $cv->send },
@@ -84,4 +81,14 @@ Usage: consumer.pl [--help|-h] [--print|-p] topic channel
   EOU
 
   exit(1);
+}
+
+sub message_handler {
+  my ($reader, $message) = @_;
+
+  if ($print) { 
+    print $message->{message}."\n";
+  }
+
+  $reader->mark_as_done_msg($message);
 }
