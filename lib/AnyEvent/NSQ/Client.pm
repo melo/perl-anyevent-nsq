@@ -10,6 +10,7 @@ use AnyEvent;
 use AnyEvent::Socket ();
 use Carp 'croak';
 use AnyEvent::NSQ::Connection;
+use AnyEvent::NSQ::Lookupd;
 
 #### Public API
 
@@ -109,7 +110,18 @@ sub _start_nsqd_connections {
 }
 
 ## nsqlookupd support - not there yet
-sub _start_lookupd_poolers { }
+sub _start_lookupd_poolers {
+  my ($self) = @_;
+
+  ## FIXME: Given that topic is required, maybe this should move to Reader?
+  $self->{lookupd_poller} = AnyEvent::NSQ::Lookupd->new(
+    topic                  => $self->{topic},
+    lookupd_http_addresses => $self->{lookupd_http_addresses},
+
+    add_nsqd_cb  => sub { $self->_start_nsqd_connection($_[2], nsqd_id => $_[1]) },
+    drop_nsqd_cb => sub { $self->_drop_nsqd_connection($_[1]) },
+  );
+}
 
 
 #### nsqd pool connection management
@@ -136,6 +148,11 @@ sub _start_nsqd_connection {
   $conns->{$nsqd_tcp_address}{state} = 'connecting';
 
   return;
+}
+
+## drop all connections for a specific nsqd
+sub _drop_nsqd_connection {
+
 }
 
 ## return one connection that is connected
