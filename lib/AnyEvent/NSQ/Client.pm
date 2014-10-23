@@ -47,6 +47,14 @@ sub publish {
   return $conn->publish($topic, @data);
 }
 
+sub ready {
+  my ($self, $ready_count) = @_;
+
+  $_->{conn}->ready($ready_count) for values %{ $self->{nsqd_conns} };
+
+  return;
+}
+
 
 #### Argument parsing
 
