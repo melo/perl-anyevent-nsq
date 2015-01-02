@@ -58,8 +58,8 @@ sub _identified {
 
       ## Keep the connection in the registry in case the user
       ##  wants to issue FIN/REQs inside the callback
-      $self->{routing}->{$msg->{message_id}} = $conn;
-      weaken( $self->{routing}->{$msg->{message_id}} );
+      $self->{routing}->{ $msg->{message_id} } = $conn;
+      weaken($self->{routing}->{ $msg->{message_id} });
 
       $self->{message_cb}->($self, $msg);
     }
