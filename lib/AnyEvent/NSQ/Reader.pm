@@ -86,7 +86,7 @@ sub requeue_msg {
   return 1;
 }
 
-sub touch_message {
+sub touch_msg {
   my ($self, $msg) = @_;
 
   my $conn = $self->_find_and_delete_message_connection($msg);
@@ -94,6 +94,7 @@ sub touch_message {
   $conn->touch_msg($msg);
   return 1;
 }
+*touch_message = \&touch_msg;
 
 sub _find_and_delete_message_connection {
   my ($self, $msg) = @_;
