@@ -71,16 +71,16 @@ sub _identified {
 sub mark_as_done_msg {
   my ($self, $msg) = @_;
 
-  my $conn = $self->_find_and_delete_message_connection($msg);
+  my $conn = $self->_find_message_connection($msg, {delete => 1});
 
   $conn->mark_as_done_msg($msg);
   return 1;
-} 
+}
 
 sub requeue_msg {
   my ($self, $msg, $delay) = @_;
 
-  my $conn = $self->_find_and_delete_message_connection($msg);
+  my $conn = $self->_find_message_connection($msg, {delete => 1});
 
   $conn->requeue_msg($msg, $delay);
   return 1;
@@ -89,23 +89,23 @@ sub requeue_msg {
 sub touch_msg {
   my ($self, $msg) = @_;
 
-  my $conn = $self->_find_and_delete_message_connection($msg);
-  
+  my $conn = $self->_find_message_connection($msg);
+
   $conn->touch_msg($msg);
   return 1;
 }
 *touch_message = \&touch_msg;
 
-sub _find_and_delete_message_connection {
-  my ($self, $msg) = @_;
+sub _find_message_connection {
+  my ($self, $msg, $opts) = @_;
+  $opts = {} unless ref $opts;
 
   my $id = ref($msg) ? $msg->{message_id} : $msg;
 
-  my $conn = delete($self->{routing}->{$id});
- 
-  if ( !$conn ) {
-    croak "WARN: Could not find the connection to route msg $id";
-  }
+  my $conn = $self->{routing}{$id};
+  delete($self->{routing}{$id}) if $opts->{delete};
+
+  croak "WARN: Could not find the connection to route msg $id" unless $conn;
 
   return $conn;
 }
