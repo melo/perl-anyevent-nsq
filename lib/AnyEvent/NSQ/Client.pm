@@ -38,10 +38,14 @@ sub publish {
   my $conn = $self->_random_connected_conn;
   croak "ERROR: there no active connections at this moment," unless $conn;
 
+  my @args;
   if (ref($data[-1]) eq 'CODE' or !defined($data[-1])) {
     my $cb = pop @data;
-    push @data, sub { $cb->($self, $topic, \@data, @_) }
-      if $cb;
+
+    if ($cb) {
+      my @cb_data = @data;
+      push @data, sub { $cb->($self, $topic, \@cb_data, @_) }
+    }
   }
 
   return $conn->publish($topic, @data);
